@@ -1,6 +1,6 @@
 ﻿# Aplicatie Gestiune Inchirieri Auto
 
-Aceasta este o aplicatie realizata in C# (.NET 10) pentru gestionarea fluxului de lucru al unei firme de inchirieri masini.
+Aceasta este o aplicatie realizata in C# (.NET) pentru gestionarea fluxului de lucru al unei firme de inchirieri masini.
 
 ### Operatii implementate:
 * **Autentificare:** Logare securizata pentru angajati.
