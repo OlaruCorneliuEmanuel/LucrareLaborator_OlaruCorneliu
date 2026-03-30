@@ -1,5 +1,6 @@
 ﻿using System;
 using LibrarieModele;
+using NivelStocareDate; 
 
 namespace App_InchiriereAuto
 {
@@ -7,53 +8,111 @@ namespace App_InchiriereAuto
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("=== Sistem Gestiune Închirieri Auto ===");
-            Console.WriteLine();
+           
+            AdministrareInchirieriMemorie admin = new AdministrareInchirieriMemorie();
+            bool ruleaza = true;
 
-            // 1. Citirea datelor pentru Persoană
-            Console.Write("Introduceti numele clientului: ");
-            string nume = Console.ReadLine();
+            while (ruleaza)
+            {
+                Console.WriteLine("\n=== Sistem Gestiune Închirieri Auto ===");
+                Console.WriteLine("1. Adauga o inchiriere noua");
+                Console.WriteLine("2. Afiseaza toate inchirierile");
+                Console.WriteLine("3. Cauta masini dupa marca (LINQ)");
+                Console.WriteLine("0. Iesire");
+                Console.Write("Alege o optiune: ");
+                string optiune = Console.ReadLine();
 
-            Console.Write("Introduceti prenumele clientului: ");
-            string prenume = Console.ReadLine();
+                switch (optiune)
+                {
+                    case "1":
+                        Console.WriteLine();
+                        // Citirea datelor pentru Persoană
+                        Console.Write("Introduceti numele clientului: ");
+                        string nume = Console.ReadLine();
 
-            Console.Write("Introduceti CNP: ");
-            string cnp = Console.ReadLine();
+                        Console.Write("Introduceti prenumele clientului: ");
+                        string prenume = Console.ReadLine();
 
-            // Creăm obiectului de tip Persoana
-            Persoana clientNou = new Persoana(nume, prenume, cnp);
+                        Console.Write("Introduceti CNP: ");
+                        string cnp = Console.ReadLine();
 
-
-            // 2. Citirea datelor pentru Mașină
-            Console.WriteLine("\n--- Detalii Masina ---");
-            Console.Write("Marca: ");
-            string marca = Console.ReadLine();
-
-            Console.Write("Model: ");
-            string model = Console.ReadLine();
-
-            Masina masinaAleasa = new Masina(marca, model);
-
-
-            // 3. Detalii închiriere
-            Console.Write("\nNumar de zile pentru inchiriere: ");
-            int zile = int.Parse(Console.ReadLine());
-
-            // Cream obiectul de tip  Inchiriere
-            Inchiriere contract = new Inchiriere(clientNou, masinaAleasa, zile);
+                        // Crearea obiectului de tip Persoana
+                        Persoana clientNou = new Persoana(nume, prenume, cnp);
 
 
-            // 4. Afișare confirmare
-            Console.WriteLine("\n======================================");
-            Console.WriteLine("INCHIRIERE INREGISTRATĂ CU SUCCES!");
-            Console.WriteLine($"Client: {contract.Client.Nume} {contract.Client.Prenume}");
-            Console.WriteLine($"Mașina: {contract.Automobil.Marca} {contract.Automobil.Model}");
-            Console.WriteLine($"Durata: {contract.NumarZile} zile");
-            Console.WriteLine("======================================");
+                        // Citirea datelor pentru Masina
+                        Console.WriteLine("\n--- Detalii Masina ---");
+                        Console.Write("Marca: ");
+                        string marca = Console.ReadLine();
 
-            // Menținem consola deschisă
-            Console.WriteLine("\nApasa orice tasta pentru a inchide...");
-            Console.ReadKey();
+                        Console.Write("Model: ");
+                        string model = Console.ReadLine();
+
+                        Masina masinaAleasa = new Masina(marca, model);
+
+
+                        // Detalii închiriere
+                        Console.Write("\nNumar de zile pentru inchiriere: ");
+                        int zile = int.Parse(Console.ReadLine());
+
+                        // Cream obiectul de tip  Inchiriere
+                        Inchiriere contract = new Inchiriere(clientNou, masinaAleasa, zile);
+
+                        Console.WriteLine();
+                        Console.WriteLine("Se inregistreaza inchirierea, va rugam asteapta!");
+                        System.Threading.Thread.Sleep(2000);
+
+
+                        // Afișare confirmare
+                        Console.WriteLine("\n======================================");
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("INCHIRIERE SALVATA CU SUCCES!");
+                        Console.ResetColor();
+                        Console.WriteLine($"Client: {contract.Client.Nume} {contract.Client.Prenume}");
+                        Console.WriteLine($"Masina: {contract.Automobil.Marca} {contract.Automobil.Model}");
+                        Console.WriteLine($"Durata: {contract.NumarZile} zile");
+                        Console.WriteLine("======================================");
+                        Persoana clientNouEX = new Persoana("Ion", "Popescu", "123456789"); // exemplu
+                        Masina masinaAleasaEX = new Masina("Dacia", "Logan"); // exemplu
+                        Inchiriere contractEX = new Inchiriere(clientNou, masinaAleasa, 5); // exemplu
+
+                        admin.AdaugaInchiriere(contract);
+
+                        Console.WriteLine("\nApasa orice tasta pentru a reveni la meniu...");
+                        Console.ReadKey();
+                        Console.Clear();
+                        break;
+                    case "2":
+                        Console.WriteLine("\n--- Lista Inchirieri ---");
+                        var toateInchirierile = admin.GetInchirieri();
+                        foreach (var inch in toateInchirierile)
+                        {
+                            Console.WriteLine($"Client: {inch.Client.Nume}, Masina: {inch.Automobil.Marca}");
+                        }
+                        Console.WriteLine("\nApasa orice tasta pentru a reveni la meniu...");
+                        Console.ReadKey();
+                        Console.Clear();
+                        break;
+                    case "3":
+                        Console.Write("Introdu marca cautata: ");
+                        string marcaCautata = Console.ReadLine();
+                        var rezultate = admin.CautaMasiniDupaMarca(marcaCautata);
+                        foreach (var rez in rezultate)
+                        {
+                            Console.WriteLine($"Gasit: Client {rez.Client.Nume} cu masina {rez.Automobil.Marca}");
+                        }
+                        Console.WriteLine("\nApasa orice tasta pentru a reveni la meniu...");
+                        Console.ReadKey();
+                        Console.Clear();
+                        break;
+                    case "0":
+                        ruleaza = false;
+                        break;
+                    default:
+                        Console.WriteLine("Optiune invalida!");
+                        break;
+                }
+            }
         }
     }
 }

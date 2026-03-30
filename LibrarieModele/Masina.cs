@@ -4,6 +4,9 @@
     {
         public string Marca { get; set; }
         public string Model { get; set; }
+        public Culoare CuloareMasina { get; set; }
+        public TipCombustibil Combustibil { get; set; }
+        public optiuniMasina Optiuni { get; set; }
         public enum Culoare { 
             Alb, 
             Negru, 
