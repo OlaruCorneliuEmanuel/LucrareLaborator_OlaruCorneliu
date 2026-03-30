@@ -4,4 +4,6 @@
   </Folder>
   <Project Path="App_InchiriereAuto/App_InchiriereAuto.csproj" Id="d4f8d68b-e769-446e-97db-14f551e8a3f4" />
   <Project Path="Ex1_CalculSalariu/Ex1_CalculSalariu.csproj" />
+  <Project Path="LibrarieModele/LibrarieModele.csproj" Id="4f5c94a9-389c-4a09-8581-22de4be16334" />
+  <Project Path="NivelStocareDate/NivelStocareDate.csproj" Id="785e7067-97b0-40c2-b9cf-3a23d4f5af72" />
 </Solution>

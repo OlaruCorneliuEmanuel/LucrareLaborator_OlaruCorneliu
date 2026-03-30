@@ -1,4 +1,4 @@
-﻿namespace App_InchiriereAuto
+﻿namespace LibrarieModele
 {
     public class Persoana
     {

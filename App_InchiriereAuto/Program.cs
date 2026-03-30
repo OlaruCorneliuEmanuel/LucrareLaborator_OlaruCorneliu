@@ -1,4 +1,5 @@
 ﻿using System;
+using LibrarieModele;
 
 namespace App_InchiriereAuto
 {
@@ -24,7 +25,7 @@ namespace App_InchiriereAuto
 
 
             // 2. Citirea datelor pentru Mașină
-            Console.WriteLine("\n--- Detalii Mașină ---");
+            Console.WriteLine("\n--- Detalii Masina ---");
             Console.Write("Marca: ");
             string marca = Console.ReadLine();
 
@@ -35,7 +36,7 @@ namespace App_InchiriereAuto
 
 
             // 3. Detalii închiriere
-            Console.Write("\nNumăr de zile pentru închiriere: ");
+            Console.Write("\nNumar de zile pentru inchiriere: ");
             int zile = int.Parse(Console.ReadLine());
 
             // Cream obiectul de tip  Inchiriere
@@ -44,14 +45,14 @@ namespace App_InchiriereAuto
 
             // 4. Afișare confirmare
             Console.WriteLine("\n======================================");
-            Console.WriteLine("ÎNCHIRIERE ÎNREGISTRATĂ CU SUCCES!");
+            Console.WriteLine("INCHIRIERE INREGISTRATĂ CU SUCCES!");
             Console.WriteLine($"Client: {contract.Client.Nume} {contract.Client.Prenume}");
-            Console.WriteLine($"Mașină: {contract.Automobil.Marca} {contract.Automobil.Model}");
-            Console.WriteLine($"Durată: {contract.NumarZile} zile");
+            Console.WriteLine($"Mașina: {contract.Automobil.Marca} {contract.Automobil.Model}");
+            Console.WriteLine($"Durata: {contract.NumarZile} zile");
             Console.WriteLine("======================================");
 
             // Menținem consola deschisă
-            Console.WriteLine("\nApasă orice tastă pentru a inchide...");
+            Console.WriteLine("\nApasa orice tasta pentru a inchide...");
             Console.ReadKey();
         }
     }
