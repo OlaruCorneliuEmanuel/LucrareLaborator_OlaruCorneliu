@@ -57,7 +57,18 @@
         </StackPanel>
 
         <!-- PARTEA DREAPTĂ: Afișare Date în Tabel -->
-        <DataGrid x:Name="dgInchirieri" Grid.Column="1" AutoGenerateColumns="True" IsReadOnly="True" />
+        <DataGrid x:Name="dgInchirieri" Grid.Column="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="10,0,0,0">
+            <DataGrid.Columns>
+                <!-- Legăm (Bind) coloanele direct de proprietățile din interiorul obiectelor tale -->
+                <DataGridTextColumn Header="Nume Client" Binding="{Binding Client.Nume}" Width="*"/>
+                <DataGridTextColumn Header="Prenume" Binding="{Binding Client.Prenume}" Width="*"/>
+                <DataGridTextColumn Header="Mașină" Binding="{Binding Automobil.Marca}" Width="*"/>
+                <DataGridTextColumn Header="Zile" Binding="{Binding NumarZile}" Width="60"/>
+
+                <!-- Formatăm data ca să arate frumos (Zi/Lună/An) -->
+                <DataGridTextColumn Header="Data" Binding="{Binding DataInchiriere, StringFormat=dd/MM/yyyy}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
     </Grid>
 </Window>

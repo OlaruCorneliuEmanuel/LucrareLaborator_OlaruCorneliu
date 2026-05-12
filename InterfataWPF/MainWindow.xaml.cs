@@ -1,94 +1,112 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel; // Necesar pentru ObservableCollection (Lab 10)
+using System.ComponentModel;          // Necesar pentru INotifyPropertyChanged (Lab 10)
+using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
-using LibrarieModele; // Entitatile tale
-using NivelStocareDate; // Logica de salvare
+using LibrarieModele;
+using NivelStocareDate;
 
 namespace InterfataWPF
 {
-    public partial class MainWindow : Window
+    // 1. Clasa ferestrei implementează INotifyPropertyChanged pentru Data Binding modern
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        // Instanțiem clasa de stocare (folosesc in memorie pentru rapiditate, dar merge si FisierText)
+        // Instanțiem sistemul tău de salvare a datelor
         private IStocareData adminInchirieri = new AdministrareInchirieriMemorie();
 
+        // 2. Colectia inteligentă care va trimite notificări automate către DataGrid
+        public ObservableCollection<Inchiriere> ListaInchirieri { get; set; }
+
+        // 3. Cerință Laboratorul 10: Mecanismul de notificare a modificărilor
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        // --- CONSTRUCTORUL FERESTREI ---
         public MainWindow()
         {
             InitializeComponent();
+
+            // Setăm fereastra curentă ca sursă de date (Data Binding)
+            DataContext = this;
+
+            // Inițializăm colecția vizuală cu datele deja existente în memorie/fișier
+            ListaInchirieri = new ObservableCollection<Inchiriere>(adminInchirieri.GetInchirieri());
+
+            // Conectăm tabelul DataGrid direct la această colecție
+            dgInchirieri.ItemsSource = ListaInchirieri;
         }
 
         // --- BUTONUL ADAUGĂ ---
         private void btnAdauga_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Preluarea textului simplu
             string nume = txtNumeClient.Text.Trim();
             string prenume = txtPrenumeClient.Text.Trim();
-
             int.TryParse(txtZile.Text, out int zile);
 
-            // Validare simplă (Lab 7)
+            // Validarea datelor (Lab 7)
             if (string.IsNullOrEmpty(nume) || string.IsNullOrEmpty(prenume))
             {
                 tbEroare.Text = "Numele și prenumele sunt obligatorii!";
                 return;
             }
 
-            // 2. Preluarea din lista derulantă (ComboBox - Lab 9)
+            // Preluare element din lista derulantă (Lab 9)
             string marca = cmbMarca.Text;
             if (marca == "Selectează marca...") marca = "Necunoscut";
 
-            // 3. Preluarea datei din calendar (DatePicker - Lab 9)
-            // Folosim operatorul ?? pentru cazul în care utilizatorul nu a ales nimic
+            // Preluare dată din calendar (Lab 9)
             DateTime dataInchi = dpDataInchiriere.SelectedDate ?? DateTime.Today;
 
-            // 4. Preluarea selecției unice (RadioButton - Lab 8)
-            Masina.TipCombustibil combustibil = Masina.TipCombustibil.Benzina;
-            if (rbMotorina.IsChecked == true) combustibil = Masina.TipCombustibil.Motorina;
-            if (rbElectric.IsChecked == true) combustibil = Masina.TipCombustibil.Electric;
+            // Crearea obiectelor pe baza claselor tale
+            Persoana clientNou = new Persoana(nume, prenume, "Necunoscut");
+            Masina masinaNoua = new Masina(marca, "Standard");
 
-            // 5. Crearea obiectelor folosind clasele tale din LibrarieModele
-            Persoana clientNou = new Persoana(nume, prenume, "Necunoscut"); // CNP placeholder
-            Masina masinaNoua = new Masina(marca, "Standard"); // Model placeholder
-            masinaNoua.Combustibil = combustibil;
+            // Generarea contractului (folosind constructorul modificat cu DateTime anterior)
+            Inchiriere contractNou = new Inchiriere(clientNou, masinaNoua, zile, dataInchi);
 
-            Inchiriere contract = new Inchiriere(clientNou, masinaNoua, zile, dataInchi);
+            // 1. Salvăm contractul în spate (NivelStocareDate)
+            adminInchirieri.AdaugaInchiriere(contractNou);
 
-            // 6. Salvarea contractului și curățarea interfeței
-            adminInchirieri.AdaugaInchiriere(contract);
-            tbEroare.Text = ""; // Ștergem mesajul de eroare
+            // 2. Adăugăm contractul în colecția vizuală
+            // Aici intervine magia din Lab 10: XAML-ul simte adăugarea și actualizează DataGrid-ul instant!
+            ListaInchirieri.Add(contractNou);
 
-            // Golim casetele după adăugare conform cerinței de test
+            // Resetarea interfeței după o salvare de succes (Cerință Test 2)
+            tbEroare.Text = "";
             txtNumeClient.Clear();
             txtPrenumeClient.Clear();
             txtZile.Clear();
-
-            // Afișăm în tabel lista actualizată
-            ActualizeazaTabel(adminInchirieri.GetInchirieri());
         }
 
-        // --- BUTONUL AFIȘEAZĂ ---
+        // --- BUTONUL AFIȘEAZĂ (Toate) ---
         private void btnAfiseaza_Click(object sender, RoutedEventArgs e)
         {
-            ActualizeazaTabel(adminInchirieri.GetInchirieri());
+            // Golește lista vizuală și o reumple cu datele complete din administrare
+            ListaInchirieri.Clear();
+            foreach (var contract in adminInchirieri.GetInchirieri())
+            {
+                ListaInchirieri.Add(contract);
+            }
         }
 
         // --- BUTONUL FILTREAZĂ ---
         private void btnFiltreaza_Click(object sender, RoutedEventArgs e)
         {
-            string marcaSelectata = cmbMarca.Text; // Luăm marca din ComboBox
+            string marcaSelectata = cmbMarca.Text;
 
-            // Folosim funcția ta cu LINQ scrisă anterior
+            // Apelăm metoda ta de filtrare cu LINQ din NivelStocareDate
             List<Inchiriere> filtrate = adminInchirieri.CautaMasiniDupaMarca(marcaSelectata);
-            ActualizeazaTabel(filtrate);
-        }
 
-        // --- METODĂ AJUTĂTOARE PENTRU TABEL (DataGrid - Lab 8 & Lab 9) ---
-        private void ActualizeazaTabel(List<Inchiriere> lista)
-        {
-            // Scurt truc din Laboratorul 9: Pentru ca tabelul să își dea seama că 
-            // lista s-a modificat, sursa se face null mai întâi, apoi i se dă lista.
-            dgInchirieri.ItemsSource = null;
-            dgInchirieri.ItemsSource = lista;
+            // Reîncărcăm colecția vizuală doar cu rezultatele găsite
+            ListaInchirieri.Clear();
+            foreach (var contract in filtrate)
+            {
+                ListaInchirieri.Add(contract);
+            }
         }
     }
 }
