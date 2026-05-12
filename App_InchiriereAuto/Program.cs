@@ -1,6 +1,7 @@
 ﻿using System;
 using LibrarieModele;
-using NivelStocareDate; 
+using NivelStocareDate;
+
 
 namespace App_InchiriereAuto
 {
@@ -54,9 +55,11 @@ namespace App_InchiriereAuto
                         // Detalii închiriere
                         Console.Write("\nNumar de zile pentru inchiriere: ");
                         int zile = int.Parse(Console.ReadLine());
+                        Console.Write("Data inchirierii (yyyy-MM-dd): ");
+                        DateTime dataInchiriere = DateTime.Parse(Console.ReadLine());
 
                         // Cream obiectul de tip  Inchiriere
-                        Inchiriere contract = new Inchiriere(clientNou, masinaAleasa, zile);
+                        Inchiriere contract = new Inchiriere(clientNou, masinaAleasa, zile, dataInchiriere);
 
                         Console.WriteLine();
                         Console.WriteLine("Se inregistreaza inchirierea, va rugam asteapta!");
@@ -74,7 +77,7 @@ namespace App_InchiriereAuto
                         Console.WriteLine("======================================");
                         Persoana clientNouEX = new Persoana("Ion", "Popescu", "123456789"); // exemplu
                         Masina masinaAleasaEX = new Masina("Dacia", "Logan"); // exemplu
-                        Inchiriere contractEX = new Inchiriere(clientNou, masinaAleasa, 5); // exemplu
+                        Inchiriere contractEX = new Inchiriere(clientNou, masinaAleasa, 5, DateTime.MinValue); // exemplu
 
                         admin.AdaugaInchiriere(contract);
 

@@ -4,7 +4,7 @@ using LibrarieModele;
 
 namespace NivelStocareDate
 {
-    public class AdministrareInchirieriMemorie
+    public class AdministrareInchirieriMemorie : IStocareData
     {
         private List<Inchiriere> listaInchirieri;
 
