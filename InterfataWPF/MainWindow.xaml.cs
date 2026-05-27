@@ -1,111 +1,222 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel; // Necesar pentru ObservableCollection (Lab 10)
-using System.ComponentModel;          // Necesar pentru INotifyPropertyChanged (Lab 10)
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using LibrarieModele;
 using NivelStocareDate;
 
 namespace InterfataWPF
 {
-    // 1. Clasa ferestrei implementează INotifyPropertyChanged pentru Data Binding modern
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        // Instanțiem sistemul tău de salvare a datelor
-        private IStocareData adminInchirieri = new AdministrareInchirieriMemorie();
+        // === MODIFICAREA CHEIE (Lab 5) PENTRU A FOLOSI FISIERELE ===
+        private IStocareData adminStocare = StocareFactory.GetAdministratorStocare();
 
-        // 2. Colectia inteligentă care va trimite notificări automate către DataGrid
         public ObservableCollection<Inchiriere> ListaInchirieri { get; set; }
+        public ObservableCollection<Masina> ListaMasini { get; set; }
+        public ObservableCollection<Masina> MasiniDisponibile { get; set; } = new ObservableCollection<Masina>();
 
-        // 3. Cerință Laboratorul 10: Mecanismul de notificare a modificărilor
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        // --- CONSTRUCTORUL FERESTREI ---
         public MainWindow()
         {
             InitializeComponent();
-
-            // Setăm fereastra curentă ca sursă de date (Data Binding)
             DataContext = this;
 
-            // Inițializăm colecția vizuală cu datele deja existente în memorie/fișier
-            ListaInchirieri = new ObservableCollection<Inchiriere>(adminInchirieri.GetInchirieri());
+            ListaInchirieri = new ObservableCollection<Inchiriere>(adminStocare.GetInchirieri());
+            ListaMasini = new ObservableCollection<Masina>(adminStocare.GetMasini());
 
-            // Conectăm tabelul DataGrid direct la această colecție
             dgInchirieri.ItemsSource = ListaInchirieri;
+            dgMasini.ItemsSource = ListaMasini;
+
+            ActualizeazaInterfataSiStatistici();
         }
 
-        // --- BUTONUL ADAUGĂ ---
-        private void btnAdauga_Click(object sender, RoutedEventArgs e)
+        private void ActualizeazaInterfataSiStatistici()
         {
-            string nume = txtNumeClient.Text.Trim();
-            string prenume = txtPrenumeClient.Text.Trim();
-            int.TryParse(txtZile.Text, out int zile);
-
-            // Validarea datelor (Lab 7)
-            if (string.IsNullOrEmpty(nume) || string.IsNullOrEmpty(prenume))
+            MasiniDisponibile.Clear();
+            var filtrare = ListaMasini.Where(m => m.EsteInchiriata == false).ToList();
+            foreach (var m in filtrare)
             {
-                tbEroare.Text = "Numele și prenumele sunt obligatorii!";
-                return;
+                MasiniDisponibile.Add(m);
             }
 
-            // Preluare element din lista derulantă (Lab 9)
-            string marca = cmbMarca.Text;
-            if (marca == "Selectează marca...") marca = "Necunoscut";
+            int totalMasini = ListaMasini.Count;
+            int masiniInchiriate = ListaMasini.Count(m => m.EsteInchiriata);
+            int contracteActive = ListaInchirieri.Count;
 
-            // Preluare dată din calendar (Lab 9)
-            DateTime dataInchi = dpDataInchiriere.SelectedDate ?? DateTime.Today;
+            tbStatisticiLive.Text = $"📊 Total Flotă: {totalMasini} | Libere: {filtrare.Count} | Închiriate: {masiniInchiriate} | Contracte emise: {contracteActive}";
+        }
 
-            // Crearea obiectelor pe baza claselor tale
-            Persoana clientNou = new Persoana(nume, prenume, "Necunoscut");
-            Masina masinaNoua = new Masina(marca, "Standard");
+        private void txtCautare_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string keyword = txtCautare.Text.ToLower();
 
-            // Generarea contractului (folosind constructorul modificat cu DateTime anterior)
-            Inchiriere contractNou = new Inchiriere(clientNou, masinaNoua, zile, dataInchi);
+            var rezultate = adminStocare.GetInchirieri()
+                                        .Where(c => c.Client.Nume.ToLower().Contains(keyword) ||
+                                                    c.Client.Prenume.ToLower().Contains(keyword))
+                                        .ToList();
 
-            // 1. Salvăm contractul în spate (NivelStocareDate)
-            adminInchirieri.AdaugaInchiriere(contractNou);
+            ListaInchirieri.Clear();
+            foreach (var r in rezultate)
+            {
+                ListaInchirieri.Add(r);
+            }
+        }
 
-            // 2. Adăugăm contractul în colecția vizuală
-            // Aici intervine magia din Lab 10: XAML-ul simte adăugarea și actualizează DataGrid-ul instant!
-            ListaInchirieri.Add(contractNou);
-
-            // Resetarea interfeței după o salvare de succes (Cerință Test 2)
+        private bool ValideazaFormular()
+        {
+            bool isValid = true;
             tbEroare.Text = "";
+
+            txtNumeClient.Background = Brushes.White;
+            txtPrenumeClient.Background = Brushes.White;
+            cmbMasinaSelectata.Background = Brushes.White;
+
+            if (string.IsNullOrWhiteSpace(txtNumeClient.Text))
+            {
+                txtNumeClient.Background = new SolidColorBrush(Color.FromRgb(255, 230, 230));
+                tbEroare.Text += "Numele este obligatoriu!\n";
+                isValid = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtPrenumeClient.Text))
+            {
+                txtPrenumeClient.Background = new SolidColorBrush(Color.FromRgb(255, 230, 230));
+                tbEroare.Text += "Prenumele este obligatoriu!\n";
+                isValid = false;
+            }
+
+            if (cmbMasinaSelectata.SelectedItem == null)
+            {
+                cmbMasinaSelectata.Background = new SolidColorBrush(Color.FromRgb(255, 230, 230));
+                tbEroare.Text += "Alege o mașină din listă!\n";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        private void btnMeniuInchirieri_Click(object sender, RoutedEventArgs e)
+        {
+            panelInchirieri.Visibility = Visibility.Visible;
+            panelMasini.Visibility = Visibility.Collapsed;
+        }
+
+        private void btnMeniuFlota_Click(object sender, RoutedEventArgs e)
+        {
+            panelInchirieri.Visibility = Visibility.Collapsed;
+            panelMasini.Visibility = Visibility.Visible;
+        }
+
+        private void MeniuIesire_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnAdauga_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValideazaFormular()) return;
+
+            int.TryParse(txtZile.Text, out int zile);
+            DateTime data = dpDataInchiriere.SelectedDate ?? DateTime.Today;
+
+            Masina masinaAleasa = cmbMasinaSelectata.SelectedItem as Masina;
+            Persoana client = new Persoana(txtNumeClient.Text, txtPrenumeClient.Text, "Necunoscut");
+            Inchiriere contract = new Inchiriere(client, masinaAleasa, zile, data);
+
+            masinaAleasa.EsteInchiriata = true;
+            adminStocare.AdaugaInchiriere(contract);
+
+            // Reîmprospătăm fișierul mașinilor pentru a salva starea de "EsteInchiriata=true"
+            adminStocare.StergeMasina(masinaAleasa);
+            adminStocare.AdaugaMasina(masinaAleasa);
+
+            if (string.IsNullOrWhiteSpace(txtCautare.Text)) ListaInchirieri.Add(contract);
+
+            tbEroare.Text = "Contract adăugat cu succes!";
+            tbEroare.Foreground = Brushes.Green;
+
             txtNumeClient.Clear();
             txtPrenumeClient.Clear();
             txtZile.Clear();
+
+            ActualizeazaInterfataSiStatistici();
+            dgMasini.Items.Refresh();
         }
 
-        // --- BUTONUL AFIȘEAZĂ (Toate) ---
-        private void btnAfiseaza_Click(object sender, RoutedEventArgs e)
+        private void btnSterge_Click(object sender, RoutedEventArgs e)
         {
-            // Golește lista vizuală și o reumple cu datele complete din administrare
-            ListaInchirieri.Clear();
-            foreach (var contract in adminInchirieri.GetInchirieri())
+            if (dgInchirieri.SelectedItem is Inchiriere selectata)
             {
-                ListaInchirieri.Add(contract);
+                selectata.Automobil.EsteInchiriata = false;
+                ListaInchirieri.Remove(selectata);
+                adminStocare.StergeInchiriere(selectata);
+
+                // Salvăm noua stare a mașinii eliberate înapoi în fișier
+                adminStocare.StergeMasina(selectata.Automobil);
+                adminStocare.AdaugaMasina(selectata.Automobil);
+
+                ActualizeazaInterfataSiStatistici();
+                dgMasini.Items.Refresh();
+
+                MessageBox.Show("Mașina a fost returnată și contractul șters!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        // --- BUTONUL FILTREAZĂ ---
-        private void btnFiltreaza_Click(object sender, RoutedEventArgs e)
+        private void btnAdaugaMasina_Click(object sender, RoutedEventArgs e)
         {
-            string marcaSelectata = cmbMarca.Text;
-
-            // Apelăm metoda ta de filtrare cu LINQ din NivelStocareDate
-            List<Inchiriere> filtrate = adminInchirieri.CautaMasiniDupaMarca(marcaSelectata);
-
-            // Reîncărcăm colecția vizuală doar cu rezultatele găsite
-            ListaInchirieri.Clear();
-            foreach (var contract in filtrate)
+            if (!string.IsNullOrEmpty(txtMarca.Text) && !string.IsNullOrEmpty(txtModel.Text))
             {
-                ListaInchirieri.Add(contract);
+                Masina m = new Masina(txtMarca.Text, txtModel.Text);
+
+                m.CuloareMasina = (Masina.Culoare)Enum.Parse(typeof(Masina.Culoare), cmbCuloare.Text);
+                m.Combustibil = (Masina.TipCombustibil)Enum.Parse(typeof(Masina.TipCombustibil), cmbCombustibil.Text);
+
+                Masina.optiuniMasina optiuniSelectate = Masina.optiuniMasina.Niciuna;
+                if (chkAer.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.AerConditionat;
+                if (chkNavigatie.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.Navigatie;
+                if (chkSenzori.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.SenzoriParcare;
+                if (chkCamera.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.CameraMarsarier;
+                if (chkBluetooth.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.Bluetooth;
+                if (chkIncalzire.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.IncalzireScaune;
+                if (chkFaruri.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.FaruriLED;
+                if (chkPilot.IsChecked == true) optiuniSelectate |= Masina.optiuniMasina.PilotAutomat;
+                m.Optiuni = optiuniSelectate;
+
+                adminStocare.AdaugaMasina(m);
+                ListaMasini.Add(m);
+
+                txtMarca.Clear();
+                txtModel.Clear();
+                chkAer.IsChecked = false; chkNavigatie.IsChecked = false; chkSenzori.IsChecked = false;
+                chkCamera.IsChecked = false; chkBluetooth.IsChecked = false; chkIncalzire.IsChecked = false;
+                chkFaruri.IsChecked = false; chkPilot.IsChecked = false;
+
+                ActualizeazaInterfataSiStatistici();
+            }
+        }
+
+        private void btnStergeMasina_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgMasini.SelectedItem is Masina selectata)
+            {
+                if (selectata.EsteInchiriata)
+                {
+                    MessageBox.Show("Nu poți radia o mașină care este într-un contract activ!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                ListaMasini.Remove(selectata);
+                adminStocare.StergeMasina(selectata);
+                ActualizeazaInterfataSiStatistici();
             }
         }
     }

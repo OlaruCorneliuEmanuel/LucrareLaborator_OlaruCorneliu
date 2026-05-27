@@ -1,0 +1,2 @@
+Dacia;Golan;False;Rosu;Benzina;AerConditionat
+Mercedes;S-Classe;False;Negru;Motorina;AerConditionat, Navigatie, Bluetooth, SenzoriParcare, CameraMarsarier, IncalzireScaune, FaruriLED, PilotAutomat
