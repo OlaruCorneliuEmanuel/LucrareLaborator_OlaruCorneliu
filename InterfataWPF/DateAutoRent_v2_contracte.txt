@@ -1,0 +1,4 @@
+Olaru;Corneliu-Emanuel;Necunoscut;Audi;A4;True;Albastru;Benzina;SenzoriParcare, FaruriLED;6;28.05.2026 00:00:00
+Schipor;Mihai;Necunoscut;BMW;Seria 3;True;Negru;Motorina;AerConditionat, Bluetooth, IncalzireScaune;2;26.05.2026 00:00:00
+Stefan;Lucian;Necunoscut;Tesla;Model 3;True;Rosu;Electric;Navigatie, CameraMarsarier, PilotAutomat;1;31.05.2026 00:00:00
+Hacman;Daniel;Necunoscut;Volvo;XC60;True;Maro;Motorina;Navigatie, IncalzireScaune, FaruriLED, PilotAutomat;10;27.05.2026 00:00:00

@@ -158,10 +158,15 @@ namespace InterfataWPF
             if (dgInchirieri.SelectedItem is Inchiriere selectata)
             {
                 selectata.Automobil.EsteInchiriata = false;
+
+                var masinaDinFlota = ListaMasini.FirstOrDefault(m => m.Marca == selectata.Automobil.Marca && m.Model == selectata.Automobil.Model);
+                if (masinaDinFlota != null)
+                {
+                    masinaDinFlota.EsteInchiriata = false;
+                }
                 ListaInchirieri.Remove(selectata);
                 adminStocare.StergeInchiriere(selectata);
 
-                // Salvăm noua stare a mașinii eliberate înapoi în fișier
                 adminStocare.StergeMasina(selectata.Automobil);
                 adminStocare.AdaugaMasina(selectata.Automobil);
 

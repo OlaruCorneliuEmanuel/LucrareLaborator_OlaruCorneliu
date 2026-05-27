@@ -1,3 +1,0 @@
-Mercedes;S-Classe;False;Negru;Benzina;AerConditionat, Navigatie, Bluetooth, SenzoriParcare, CameraMarsarier, IncalzireScaune, FaruriLED, PilotAutomat
-Dacia;Logan;False;Alb;Benzina;AerConditionat
-Ford;Clio;False;Gri;Benzina;Navigatie, Bluetooth, SenzoriParcare, IncalzireScaune

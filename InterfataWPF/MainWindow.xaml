@@ -176,6 +176,7 @@
                         <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="100"/>
                         <DataGridTextColumn Header="Culoare" Binding="{Binding CuloareMasina}" Width="80"/>
                         <DataGridTextColumn Header="Combustibil" Binding="{Binding Combustibil}" Width="90"/>
+                        <DataGridTextColumn Header="Opțiuni Extra" Binding="{Binding Optiuni}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

@@ -1,2 +1,7 @@
-Dacia;Golan;False;Rosu;Benzina;AerConditionat
-Mercedes;S-Classe;False;Negru;Motorina;AerConditionat, Navigatie, Bluetooth, SenzoriParcare, CameraMarsarier, IncalzireScaune, FaruriLED, PilotAutomat
+Toyota;Corolla;False;Alb;Hibrid;AerConditionat, Navigatie, Bluetooth
+Dacia;Logan;False;Gri;Benzina;Niciuna
+Ford;Puma;False;Verde;Hibrid;AerConditionat, Bluetooth, FaruriLED
+Audi;A4;True;Albastru;Benzina;SenzoriParcare, FaruriLED
+BMW;Seria 3;True;Negru;Motorina;AerConditionat, Bluetooth, IncalzireScaune
+Tesla;Model 3;True;Rosu;Electric;Navigatie, CameraMarsarier, PilotAutomat
+Volvo;XC60;True;Maro;Motorina;Navigatie, IncalzireScaune, FaruriLED, PilotAutomat
